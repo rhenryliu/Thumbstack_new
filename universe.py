@@ -237,11 +237,11 @@ class Universe(object):
    
    
    def printCosmoParams(self):
-      print "h = ", self.bg.h
-      print "Omega0_m = ", self.bg.Omega0_m
-      print "Omega0_lambda = ", self.bg.Omega0_lambda
-      print "Omega0_r = ", self.bg.Omega0_r
-      print "Omega0_k = ", self.bg.Omega0_k
+      print("h = ", self.bg.h)
+      print("Omega0_m = ", self.bg.Omega0_m)
+      print("Omega0_lambda = ", self.bg.Omega0_lambda)
+      print("Omega0_r = ", self.bg.Omega0_r)
+      print("Omega0_k = ", self.bg.Omega0_k)
 
    def plotDensity(self):
       z = np.linspace(0., 300., 512)
@@ -336,15 +336,15 @@ class Universe(object):
 
    def plotThermo(self):
       # recombination
-      print "recombination redshift =", self.th.z_rec
-      print "sound horizon at recombination =", self.th.rs_rec, "Mpc/h"
-      print "sound horizon angle at recombination =", self.th.theta_s * 180./np.pi, "deg"
+      print("recombination redshift =", self.th.z_rec)
+      print("sound horizon at recombination =", self.th.rs_rec, "Mpc/h")
+      print("sound horizon angle at recombination =", self.th.theta_s * 180./np.pi, "deg")
       # drag
-      print "drag redshift =", self.th.z_drag
-      print "sound horizon at z_drag =", self.th.rs_drag, "Mpc/h"
+      print("drag redshift =", self.th.z_drag)
+      print("sound horizon at z_drag =", self.th.rs_drag, "Mpc/h")
       # reionization
-      print "reionization redshift =", self.th.z_reio
-      print "reionization optical depth =", self.th.tau_reio
+      print("reionization redshift =", self.th.z_reio)
+      print("reionization optical depth =", self.th.tau_reio)
    
    def plotPrimordial(self):
       plt.loglog(self.K, self.pm.get_pkprim(self.K), label='from CLASS')

@@ -4,6 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from importlib import reload
 # to copy files
 from shutil import copyfile
 from scipy import special, optimize, integrate, stats
@@ -70,12 +71,12 @@ import healpy as hp
 
 from matplotlib import rc
 #rc('font',**{'size':'20','family':'sans-serif','sans-serif':['Computer Modern Sans serif']})
-rc('font',**{'size':'22','family':'serif','serif':['CMU serif']})
-rc('mathtext', **{'fontset':'cm'})
-rc('text', usetex=True)
-rc('text.latex', preamble='\usepackage{amsmath}, \usepackage{amssymb}')
-#rc('font', size=20)
-rc('legend',**{'fontsize':'18'})
+# rc('font',**{'size':'22','family':'serif','serif':['CMU serif']})
+# rc('mathtext', **{'fontset':'cm'})
+# rc('text', usetex=True)
+# rc('text.latex', preamble=r'\usepackage{amsmath}, \usepackage{amssymb}')
+# #rc('font', size=20)
+# rc('legend',**{'fontsize':'18'})
 
 # fonty stuffs
 #font.serif: CMU Serif
