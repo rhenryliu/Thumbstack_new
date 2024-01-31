@@ -35,12 +35,14 @@ class ThumbStack(object):
             self.filterTypes = np.array(['diskring'])
         elif filterTypes == 'ringring':
             self.filterTypes = np.array(['ringring'])
+        elif filterTypes == 'ringring2':
+            self.filterTypes = np.array(['ringring2'])
         elif filterTypes == 'disk':
             self.filterTypes = np.array(['disk'])
         elif filterTypes == 'ring':
             self.filterTypes = np.array(['ring'])
         elif filterTypes == 'all':
-            self.filterTypes = np.array(['diskring', 'ringring', 'disk', 'ring'])
+            self.filterTypes = np.array(['diskring', 'ringring', 'ringring2', 'disk', 'ring'])
 
         # estimators (ksz, tsz) and weightings (uniform, hit, var, ...)
         # for stacked profiles, bootstrap cov and v-shuffle cov
@@ -400,10 +402,28 @@ class ThumbStack(object):
                 print("filterW sums to nan", r0, r1, np.sum(radius), np.sum(
                     1.*(radius > r0)), np.sum(1.*(radius > r0)*(radius <= r1)))
         elif filterType == 'ringring':
+            # A ringring filter is a diskring filter that also masks out the central pixels (within radius rr). This is done
+            # so that we can mask out the CIB from dust contamination at the central pixel in galaxies.
+            # ringring is the non equal area ringring filter. Instead of having the two inner and outer rings be equal area,
+            # the outer ring is the same area as the inner disk (as if the inner ring is a disk), while both the inner and outer
+            # rings are re-scaled to the same area as the disk.
             rr = self.rApInnerRad / 60. * np.pi/180.
             innerRing = 1.*(radius > rr)*(radius <= r0)
             innerRing *= np.sum(inDisk)/np.sum(innerRing)
             inRing *= np.sum(inDisk) / np.sum(inRing)
+            filterW = innerRing - inRing
+        elif filterType == 'ringring2':
+            # ringring2 is the equal-area ringring filter. The outer ring radius is chosen so that the area of the outer ring
+            # is exactly the same as the inner ring. Due to pixelization effects we still re-scale the outer ring to be the 
+            # same as the inner ring. (important: We don't change the diskarea parameter)
+            rr = self.rApInnerRad / 60. * np.pi/180.
+            innerRing = 1.*(radius > rr)*(radius <= r0)
+            # innerRing *= np.sum(inDisk)/np.sum(innerRing)
+            
+            r1 = np.sqrt(2*r0**2 - rr**2)
+            inRing = 1.*(radius > r0)*(radius <= r1)
+            inRing *= np.sum(innerRing) / np.sum(inRing)
+            
             filterW = innerRing - inRing
         elif filterType == 'disk':
             # disk filter [dimensionless]
@@ -2126,6 +2146,8 @@ class ThumbStack(object):
         if filterType == 'diskring':
             result = (1. - np.exp(-0.5*self.RApArcmin**2/sigma_cluster**2))**2
         elif filterType == 'ringring':
+            result = (1. - np.exp(-0.5*self.RApArcmin**2/sigma_cluster**2))**2
+        elif filterType == 'ringring2':
             result = (1. - np.exp(-0.5*self.RApArcmin**2/sigma_cluster**2))**2
         elif filterType == 'disk':
             result = 1. - np.exp(-0.5*self.RApArcmin**2/sigma_cluster**2)
