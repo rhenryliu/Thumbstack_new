@@ -217,14 +217,14 @@ class ThumbStack(object):
         '''1 for objects that overlap with the hit map,
         0 for objects that don't.
         '''
-        print("Create overlap flag")
+        # print("Create overlap flag")
         # find if a given object overlaps with the CMB hit map
 
         def foverlap(iObj):
             '''Returns 1. if the object overlaps with the hit map and 0. otherwise.
             '''
-            if iObj % 100000 == 0:
-                print("-", iObj)
+            # if iObj % 100000 == 0:
+                # print("-", iObj)
             ra = self.Catalog.RA[iObj]
             dec = self.Catalog.DEC[iObj]
             # hit = self.sky2map(ra, dec, self.cmbHit)
@@ -237,9 +237,9 @@ class ThumbStack(object):
             overlapFlag = np.array(
                 pool.map(foverlap, list(range(self.Catalog.nObj))))
         tStop = time()
-        print("took", (tStop-tStart)/60., "min")
-        print("Out of", self.Catalog.nObj, "objects,", np.sum(overlapFlag),
-              "overlap, ie a fraction", np.sum(overlapFlag)/self.Catalog.nObj)
+        # print("took", (tStop-tStart)/60., "min")
+        # print("Out of", self.Catalog.nObj, "objects,", np.sum(overlapFlag),
+              # "overlap, ie a fraction", np.sum(overlapFlag)/self.Catalog.nObj)
         np.savetxt(self.pathOut+"/overlap_flag.txt", overlapFlag)
 
     def loadOverlapFlag(self):
@@ -497,8 +497,8 @@ class ThumbStack(object):
         diskArea: [sr]
         '''
 
-        if iObj % 100000 == 0:
-            print("- analyze object", iObj)
+        # if iObj % 100000 == 0:
+        #     print("- analyze object", iObj)
 
         # create arrays of filter values for the given object
         filtMap = {}
@@ -618,28 +618,28 @@ class ThumbStack(object):
 
         # Here mask is 1 for objects we want to keep
         mask = np.ones_like(self.Catalog.RA)
-        print("start with fraction", np.sum(mask)/len(mask), "of objects")
+        # print("start with fraction", np.sum(mask)/len(mask), "of objects")
         if mVir is not None:
             mask *= (self.Catalog.Mvir >=
                      mVir[0]) * (self.Catalog.Mvir <= mVir[1])
-            print("keeping fraction", np.sum(mask) /
-                  len(mask), "of objects after mass cut")
+            # print("keeping fraction", np.sum(mask) /
+            #       len(mask), "of objects after mass cut")
         if z is not None:
             mask *= (self.Catalog.Z >= z[0]) * (self.Catalog.Z <= z[1])
-            print("keeping fraction", np.sum(mask) /
-                  len(mask), "of objects after further z cut")
+            # print("keeping fraction", np.sum(mask) /
+            #       len(mask), "of objects after further z cut")
         if overlap:
             mask *= self.overlapFlag.copy()
-            print("keeping fraction", np.sum(mask)/len(mask),
-                  "of objects after further overlap cut")
+            # print("keeping fraction", np.sum(mask)/len(mask),
+            #       "of objects after further overlap cut")
         # PS mask: look at largest aperture, and remove if any point within the disk or ring is masked
         if psMask:
             # The point source mask may vary from one filterType to another
             if filterType is None:
                 filterType = list(self.filtMask.keys())[0]
             mask *= 1.*(np.abs(self.filtMask[filterType][:, -1]) < 1.)
-            print("keeping fraction", np.sum(mask) /
-                  len(mask), "of objects after PS mask")
+            # print("keeping fraction", np.sum(mask) /
+            #       len(mask), "of objects after PS mask")
         mask *= extraSelection
         # print "keeping fraction", np.sum(mask)/len(mask), " of objects"
         if outlierReject:
@@ -669,11 +669,11 @@ class ThumbStack(object):
                     np.abs(self.filtMap[filterType][:, :]) <= nSigmasCut * sigmas[np.newaxis, :])
                 # take the intersection of the masks
                 mask *= np.prod(newMask, axis=1).astype(bool)
-                print("keeping fraction", np.sum(1.*mask)/len(mask),
-                      "of objects after further outlier cut")
+                # print("keeping fraction", np.sum(1.*mask)/len(mask),
+                #       "of objects after further outlier cut")
         # make sure the mask is boolean
         mask = mask.astype(bool)
-        print("keeping fraction", np.sum(1.*mask)/len(mask), "in the end")
+        # print("keeping fraction", np.sum(1.*mask)/len(mask), "in the end")
         return mask
 
     ##################################################################################
@@ -693,7 +693,7 @@ class ThumbStack(object):
         filtVarTrue = np.zeros((self.Catalog.nObj, self.nRAp))
 
         if self.cmbHit is not None:
-            print("Interpolate variance=f(hit count) for each aperture")
+            # print("Interpolate variance=f(hit count) for each aperture")
             fVarFromHitCount = np.empty(self.nRAp, dtype='object')
             for iRAp in range(self.nRAp):
                 # print("Aperture number "+str(iRAp))
@@ -773,7 +773,7 @@ class ThumbStack(object):
                     fig.clf()
 
         else:
-            print("Measure var for each aperture (no hit count)")
+            # print("Measure var for each aperture (no hit count)")
             meanVarAperture = np.var(self.filtMap[filterType][mask, :], axis=0)
             for iRAp in range(self.nRAp):
                 filtVarTrue[mask, iRAp] = meanVarAperture[iRAp] * \
@@ -794,7 +794,7 @@ class ThumbStack(object):
         '''Measure the mean filter temperatures in redshift bins,
         in order to subtract it to make the kSZ estimator robust to dust evolution * mean velocities.
         '''
-        print("Measure mean T in z-bins (to subtract for kSZ)")
+        # print("Measure mean T in z-bins (to subtract for kSZ)")
 
         # keep only objects that overlap, and mask point sources
         mask = self.catalogMask(overlap=True, psMask=True, filterType=filterType, mVir=(
@@ -863,7 +863,7 @@ class ThumbStack(object):
         self.meanT = {}
         for iFilterType in range(len(self.filterTypes)):
             filterType = self.filterTypes[iFilterType]
-            print(("For "+filterType+" filter:"))
+            # print(("For "+filterType+" filter:"))
             self.meanT[filterType] = self.measureMeanTZBins(
                 filterType, plot=plot, test=test)
 
@@ -880,7 +880,7 @@ class ThumbStack(object):
 
         # tStart = time()
 
-        print(("- Compute stacked profile: "+filterType+", "+est+", "+tTh))
+        # print(("- Compute stacked profile: "+filterType+", "+est+", "+tTh))
 
         # compute stacked profile from another thumbstack object
         if ts is None:
@@ -1078,8 +1078,8 @@ class ThumbStack(object):
                 # start with a null map for stacking
                 resMap = ts.cutoutGeometry()
                 for iObj in chunk:
-                    if iObj % 100000 == 0:
-                        print("- analyze object", iObj)
+                    # if iObj % 100000 == 0:
+                    #     print("- analyze object", iObj)
                     if ts.overlapFlag[iObj]:
                         # Object coordinates
                         ra = ts.Catalog.RA[iObj]   # in deg
@@ -1326,7 +1326,7 @@ class ThumbStack(object):
     def SaveCovBootstrapStackedProfile(self, filterType, est, mVir=None, z=[0., 100.], nSamples=100, nProc=1):
         """Estimate covariance matrix for the stacked profile from bootstrap resampling
         """
-        print("Performing", nSamples, "bootstrap resamples")
+        # print("Performing", nSamples, "bootstrap resamples")
         if mVir is None:
             mVir = [self.mMin, self.mMax]
         tStart = time()
@@ -1336,7 +1336,7 @@ class ThumbStack(object):
             result = np.array(pool.map(f, list(range(nSamples))))
             # result = np.array(map(f, range(nSamples)))
         tStop = time()
-        print("took", (tStop-tStart)/60., "min")
+        # print("took", (tStop-tStart)/60., "min")
         # unpack results
         stackSamples = result[:, 0, :]  # shape (nSamples, nRAp)
         # sStackSamples = result[:,1,:]
@@ -1353,7 +1353,7 @@ class ThumbStack(object):
         that the objects that are not in common are not statistically different
         from the objects in common.
         """
-        print("Performing", nSamples, "bootstrap resamples")
+        # print("Performing", nSamples, "bootstrap resamples")
         # for each resample, compute both profiles, and concatenate, before taking the cov
         if mVir is None:
             mVir = [self.mMin, self.mMax]
@@ -1370,7 +1370,7 @@ class ThumbStack(object):
         n1 = np.sum(mask1)
         n2 = np.sum(mask2)
         n12 = np.sum(mask12)
-        print("Objects that overlap with 1, 2, 1&2:", n1, n2, n12)
+        # print("Objects that overlap with 1, 2, 1&2:", n1, n2, n12)
         # build the rescaling matrix for the cov
         block = np.ones((self.nRAp, self.nRAp))
         f11 = 1. * n12 / n1 * block
@@ -1392,7 +1392,7 @@ class ThumbStack(object):
             stackSamples = np.array(pool.map(f, list(range(nSamples))))
             # result = np.array(map(f, range(nSamples)))
         tStop = time()
-        print("took", (tStop-tStart)/60., "min")
+        # print("took", (tStop-tStart)/60., "min")
         # estimate cov
         covStack = np.cov(stackSamples, rowvar=False)
         # rescale the cov mat, since only the galaxies in common for the two maps
@@ -1406,9 +1406,9 @@ class ThumbStack(object):
         np.savetxt(path, covStack)
 
     def saveAllCovBootstrapTwoStackedProfiles(self, ts2):
-        print("- compute full joint cov between stacked profiles from:")
-        print(self.name)
-        print(ts2.name)
+        # print("- compute full joint cov between stacked profiles from:")
+        # print(self.name)
+        # print(ts2.name)
         # Compute all filter types
         for iFilterType in range(len(self.filterTypes)):
             filterType = self.filterTypes[iFilterType]
@@ -1430,7 +1430,7 @@ class ThumbStack(object):
                 filterType, est, iVShuffle=iSample, mVir=mVir, z=z)
             result = np.array(pool.map(f, list(range(nSamples))))
         tStop = time()
-        print("took", (tStop-tStart)/60., "min")
+        # print("took", (tStop-tStart)/60., "min")
         # unpack results
         stackSamples = result[:, 0, :]  # shape (nSamples, nRAp)
         # sStackSamples = result[:,1,:]
@@ -1453,7 +1453,7 @@ class ThumbStack(object):
     ##################################################################################
 
     def saveAllStackedMaps(self, filterTypes=None, Est=None):
-        print("- compute all stacked maps")
+        # print("- compute all stacked maps")
         if filterTypes is None:
             filterTypes = self.filterTypes
         if Est is None:
@@ -1473,7 +1473,7 @@ class ThumbStack(object):
             # Estimators (tSZ, kSZ, various weightings...)
             for iEst in range(len(Est)):
                 est = Est[iEst]
-                print("compute stacked map:", filterType, est)
+                # print("compute stacked map:", filterType, est)
                 stackedMap = self.computeStackedProfile(
                     filterType, est, iBootstrap=None, iVShuffle=None, tTh='', stackedMap=True)
 
