@@ -78,7 +78,7 @@ class cmbMap2(object):
             h = 6.63e-34   # SI
             kB = 1.38e-23  # SI
             def f(nu):
-               """frequency dependence for tSZ temperature
+               """frequency dependence for tSZ temperature. This is the non-relativistic conversion
                """
                x = h*nu/(kB*Tcmb)
                return x*(np.exp(x)+1.)/(np.exp(x)-1.) -4.
