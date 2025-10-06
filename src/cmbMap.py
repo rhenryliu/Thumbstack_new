@@ -24,10 +24,10 @@ class cmbMap(object):
             h = 6.63e-34   # SI
             kB = 1.38e-23  # SI
             def f(nu):
-               """frequency dependence for tSZ temperature
-               """
-               x = h*nu/(kB*Tcmb)
-               return x*(np.exp(x)+1.)/(np.exp(x)-1.) -4.
+                """frequency dependence for tSZ temperature
+                """
+                x = h*nu/(kB*Tcmb)
+                return x*(np.exp(x)+1.)/(np.exp(x)-1.) -4.
             result = result / (Tcmb * f(self.nu) * 1.e6)
         return result
 
