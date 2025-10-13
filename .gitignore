@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.DS_Store
+venv/
+Outputs_Perlmutter/
+figures/
+.vscode/
+zenodo/
+data/
+*.sh
+old/
