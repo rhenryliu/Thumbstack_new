@@ -33,6 +33,7 @@ from astropy.table import Table
 # Get JSON Parameters:
 import json
 import pprint
+import pandas as pd
 
 param_Dict = json.loads(sys.argv[1])
 locals().update(param_Dict)
@@ -48,9 +49,10 @@ save = true or false
 
 
 # catalog_path = '/global/cfs/cdirs/desicollab/science/c3/DESI-Lensing/desi_catalogues/v1.5/BGS_BRIGHT_clustering.dat.fits'
-catalog_path = '/global/cfs/cdirs/desicollab/science/c3/DESI-Lensing/desi_catalogues/v1.5/' + catalog_name + '.fits'
+# catalog_path = '/global/cfs/cdirs/desicollab/science/c3/DESI-Lensing/desi_catalogues/v1.5/' + catalog_name + '.fits'
+# catalog_path = '/global/cfs/cdirs/desi/public/dr1/survey/catalogs/dr1/LSS/iron/LSScats/v1.5/' + catalog_name + '.fits' # type: ignore
 
-cat = Table.read(catalog_path)
+# cat = Table.read(catalog_path)
 
 
 massConversion = MassConversionKravtsov14()
@@ -58,13 +60,19 @@ massConversion = MassConversionKravtsov14()
 MStellar = massConversion.fmVirTomStar(2e13)
 u = UnivMariana()
 
-try:
-    df = cat.to_pandas()
-except:
-    cat.remove_columns(['BITWEIGHTS'])
-    df = cat.to_pandas()
+# try:
+#     df = cat.to_pandas()
+# except:
+#     cat.remove_columns(['BITWEIGHTS'])
+#     # cat.remove_columns(['COEFF', 'DCHISQ'])
+#     df = cat.to_pandas()
 
-df2 = df.loc[:, ('TARGETID','RA', 'DEC', 'Z')]
+# print(df.columns)
+path = '/global/cfs/projectdirs/desi/users/mlokken/oriented_stacks/'
+fileName = 'lrgc_nocut_lrgc_nocut_noorient_100pct_0.7_0.9.csv'
+df = pd.read_csv(path + fileName, skiprows=1)
+df2 = df
+# df2 = df.loc[:, ('TARGETID','RA', 'DEC', 'Z')]
 
 # colnames = ['coordX', 'coordY', 'coordZ', 'dX', 'dY', 'dZ', 'dXKaiser', 'dYKaiser', 'dZKaiser',
 #             'vX', 'vY', 'vZ', 'vR', 'vTheta', 'vPhi']
@@ -98,7 +106,8 @@ cmap = cmbMap(CMB_path,
 nProc = 64
 # save = True
 # save = False
-filterType = 'diskring'
+# filterType = 'diskring'
+filterType = 'disk'
 
 len_df = len(df)
 # catalog_name = 'BGS_BRIGHT_clustering.dat'
@@ -113,15 +122,15 @@ df3 = df2
 # print(df2.shape)
 print(df3.shape)
 
-stack_catalogue = make_Catalog(u, massConversion, df3, catalog_name)
+stack_catalogue = make_Catalog(u, massConversion, df3, catalog_name) # type: ignore
 
 ts = ThumbStack(u, stack_catalogue, 
                 cmap.map(), 
                 cmap.mask(), 
                 cmap.hit(), 
-                catalog_name + '_' + cmap.name,
+                'Oriented_' + catalog_name + '_' + cmap.name, # type: ignore
                 nameLong=None, 
-                save=save, 
+                save=save, # type: ignore
                 nProc=nProc,
                 filterTypes=filterType,
                 doMBins=False, 
@@ -131,14 +140,30 @@ ts = ThumbStack(u, stack_catalogue,
                 cmbNu=cmap.nu, 
                 cmbUnitLatex=cmap.unitLatex,
                 rApMinArcmin=1.,
-                # rApMaxArcmin=30.,
-                # nRAp=256,
+                rApMaxArcmin=13.,
+                nRAp=18,
                 )
 
+factor = (180.*60./np.pi)**2
+est = 'tsz_uniformweight'
+df = pd.DataFrame()
+df['RApArcmin'] = ts.RApArcmin
+k = 0
+df['stackedProfile'] = factor * ts.stackedProfile[filterType+"_"+est]
+df['stackedProfile_err'] = factor * ts.sStackedProfile[filterType+"_"+est]
+df.to_csv(r'/pscratch/sd/r/rhliu/projects/ThumbStack/catalogs/for_Martine/' + catalog_name + '_' + filterType +'_stackedProfile.csv') # type: ignore 
+# for i, key in enumerate(list(catalogKeys)):
+#     for j in range(len(ts_list)):
+#         tsj = ts_list[j][i]
+        
+#         df[key + '_' + CMB_name2[j]] = factor * tsj.stackedProfile[filterType+"_"+est]
+#         df[key + '_' + CMB_name2[j] + '_err'] = factor * tsj.sStackedProfile[filterType+"_"+est]
+#         k +=1
+#         # print(key + '_' + CMB_namepublic[j])
 
 # Now to save the catalogues (as a pd dataframe, combine later for fits table file)
-allProfiles = computeProfiles(ts, 'diskring')
-mask = ts.catalogMask(overlap=True, psMask=True, filterType='diskring', mVir=None)
+allProfiles = computeProfiles(ts, filterType)
+mask = ts.catalogMask(overlap=True, psMask=True, filterType=filterType, mVir=None)
 
 df3['Mask'] = mask.astype(int)
 NObj = df3.shape[0]
@@ -153,6 +178,6 @@ for i, R in enumerate(ts.RApArcmin):
 df_save = df3.drop(columns=['Mstellar', 'Mvir'])
 # df_save.to_csv(r'/pscratch/sd/r/rhliu/projects/ThumbStack/catalogs/' + catalog_name + '.csv', index=None, mode='w')
 catalog_fits = Table.from_pandas(df_save)
-catalog_fits.write('/pscratch/sd/r/rhliu/projects/ThumbStack/catalogs/for_Sven/' + catalog_name + '_tSZ.fits', format='fits', overwrite=True)
+catalog_fits.write('/pscratch/sd/r/rhliu/projects/ThumbStack/catalogs/for_Martine/' + catalog_name + '_' + filterType + '_tSZ.fits', format='fits', overwrite=True) # type: ignore
 
 print('Done!!!')
