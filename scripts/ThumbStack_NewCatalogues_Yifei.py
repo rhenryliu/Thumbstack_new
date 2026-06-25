@@ -49,7 +49,8 @@ save = true or false
 
 # catalog_path = '/global/cfs/cdirs/desicollab/science/c3/DESI-Lensing/desi_catalogues/v1.5/BGS_BRIGHT_clustering.dat.fits'
 # catalog_path = '/global/cfs/cdirs/desicollab/science/c3/DESI-Lensing/desi_catalogues/v1.5/' + catalog_name + '.fits'
-catalog_path = '/pscratch/sd/r/rhliu/projects/ThumbStack/catalogs/' + catalog_name + '.fits'
+catalog_path = '/pscratch/sd/r/rhliu/projects/ThumbStack/catalogs/' + catalog_name + '.fits' # type: ignore
+catalog_path = '/global/homes/r/rhliu/projects/ThumbStack_new/data/' + catalog_name + '.fits' # type: ignore
 
 cat = Table.read(catalog_path)
 
@@ -116,15 +117,15 @@ df3 = df2
 # print(df2.shape)
 print(df3.shape)
 
-stack_catalogue = make_Catalog(u, massConversion, df3, catalog_name)
+stack_catalogue = make_Catalog(u, massConversion, df3, catalog_name) # type: ignore
 
 ts = ThumbStack(u, stack_catalogue, 
                 cmap.map(), 
                 cmap.mask(), 
                 cmap.hit(), 
-                catalog_name + '_' + cmap.name,
+                catalog_name + '_' + cmap.name, # type: ignore
                 nameLong=None, 
-                save=save, 
+                save=save, # type: ignore
                 nProc=nProc,
                 filterTypes=filterType,
                 doMBins=False, 
@@ -153,6 +154,6 @@ for i, R in enumerate(ts.RApArcmin):
 df_save = df3.drop(columns=['Mstellar', 'Mvir'])
 # df_save.to_csv(r'/pscratch/sd/r/rhliu/projects/ThumbStack/catalogs/' + catalog_name + '.csv', index=None, mode='w')
 catalog_fits = Table.from_pandas(df_save)
-catalog_fits.write('/pscratch/sd/r/rhliu/catalogs_public/for_Yifei/' + catalog_name + '_' + filterType + '_tSZ.fits', format='fits', overwrite=False)
+catalog_fits.write('/pscratch/sd/r/rhliu/catalogs_public/for_Yifei/' + catalog_name + '_' + filterType + '_tSZ.fits', format='fits', overwrite=False) # type: ignore
 
 print('Done!!!')

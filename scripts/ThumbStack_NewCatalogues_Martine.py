@@ -89,7 +89,7 @@ df2['Mvir'] = massConversion.fmStarTomVir(MStellar)
 
 CMB_path = "/pscratch/sd/r/rhliu/projects/ThumbStack/ACT_DR6/" + "ilc_SZ_yy.fits"
 CMB_mask = '/pscratch/sd/r/rhliu/projects/ThumbStack/ACT_DR6/wide_mask_GAL070_apod_1.50_deg_wExtended.fits'
-CMB_mask = '/pscratch/sd/r/rhliu/projects/ThumbStack/ACT_DR6/wide_mask_GAL070_apod_1.50_deg_wExtended_srcfree_Will.fits'
+# CMB_mask = '/pscratch/sd/r/rhliu/projects/ThumbStack/ACT_DR6/wide_mask_GAL070_apod_1.50_deg_wExtended_srcfree_Will.fits'
 CMB_convert = False
 CMB_name = 'act_dr6_fiducial'
 CMB_namepublic = 'ACT DR6 (fiducial)'
@@ -106,8 +106,8 @@ cmap = cmbMap(CMB_path,
 nProc = 64
 # save = True
 # save = False
-# filterType = 'diskring'
-filterType = 'disk'
+filterType = 'diskring'
+# filterType = 'disk'
 
 len_df = len(df)
 # catalog_name = 'BGS_BRIGHT_clustering.dat'
@@ -124,6 +124,8 @@ print(df3.shape)
 
 stack_catalogue = make_Catalog(u, massConversion, df3, catalog_name) # type: ignore
 
+pathOut = '/pscratch/sd/r/rhliu/projects/ThumbStack/catalogs/for_Martine2/'
+
 ts = ThumbStack(u, stack_catalogue, 
                 cmap.map(), 
                 cmap.mask(), 
@@ -135,13 +137,14 @@ ts = ThumbStack(u, stack_catalogue,
                 filterTypes=filterType,
                 doMBins=False, 
                 doBootstrap=False,
-                # doStackedMap=True,
+                doStackedMap=True,
                 doVShuffle=False, 
                 cmbNu=cmap.nu, 
                 cmbUnitLatex=cmap.unitLatex,
                 rApMinArcmin=1.,
                 rApMaxArcmin=13.,
                 nRAp=18,
+                pathOut=pathOut
                 )
 
 factor = (180.*60./np.pi)**2
@@ -151,7 +154,7 @@ df['RApArcmin'] = ts.RApArcmin
 k = 0
 df['stackedProfile'] = factor * ts.stackedProfile[filterType+"_"+est]
 df['stackedProfile_err'] = factor * ts.sStackedProfile[filterType+"_"+est]
-df.to_csv(r'/pscratch/sd/r/rhliu/projects/ThumbStack/catalogs/for_Martine/' + catalog_name + '_' + filterType +'_stackedProfile.csv') # type: ignore 
+df.to_csv(pathOut + catalog_name + '_' + filterType +'_stackedProfile.csv') # type: ignore 
 # for i, key in enumerate(list(catalogKeys)):
 #     for j in range(len(ts_list)):
 #         tsj = ts_list[j][i]
@@ -178,6 +181,6 @@ for i, R in enumerate(ts.RApArcmin):
 df_save = df3.drop(columns=['Mstellar', 'Mvir'])
 # df_save.to_csv(r'/pscratch/sd/r/rhliu/projects/ThumbStack/catalogs/' + catalog_name + '.csv', index=None, mode='w')
 catalog_fits = Table.from_pandas(df_save)
-catalog_fits.write('/pscratch/sd/r/rhliu/projects/ThumbStack/catalogs/for_Martine/' + catalog_name + '_' + filterType + '_tSZ.fits', format='fits', overwrite=True) # type: ignore
+catalog_fits.write(pathOut + catalog_name + '_' + filterType + '_tSZ.fits', format='fits', overwrite=True) # type: ignore
 
 print('Done!!!')

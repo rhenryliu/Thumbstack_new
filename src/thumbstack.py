@@ -49,8 +49,10 @@ class ThumbStack(object):
             self.filterTypes = np.array(['disk'])
         elif filterTypes == 'ring':
             self.filterTypes = np.array(['ring'])
+        elif filterTypes=='DSigma':
+         self.filterTypes = np.array(['DSigma'])
         elif filterTypes == 'all':
-            self.filterTypes = np.array(['diskring', 'ringring', 'ringring3', 'disk', 'ring'])
+            self.filterTypes = np.array(['diskring', 'ringring', 'ringring3', 'disk', 'ring', 'DSigma'])
 
         # estimators (ksz, tsz) and weightings (uniform, hit, var, ...)
         # for stacked profiles, bootstrap cov and v-shuffle cov
@@ -439,6 +441,11 @@ class ThumbStack(object):
             inRing *= np.sum(innerRing) / np.sum(inRing)
             
             filterW = innerRing - inRing            
+        elif filterType=='DSigma':
+            # Would need to convert pix area to parsec area? But could do that after the stack.
+            filterW = inDisk / np.sum(pixArea * inDisk) - inRing / np.sum(pixArea * inRing)
+            # The following line makes the filter compensated, uncomment and use if signal is too noisy.
+            # filterW -= filterW.mean()  # ensure ∫K dA = 0 numerically
         elif filterType == 'disk':
             # disk filter [dimensionless]
             inDisk = 1.*(radius <= r0)
@@ -554,6 +561,13 @@ class ThumbStack(object):
                     r0 = self.RApArcmin[iRAp] / 60. * np.pi/180.
                     # choose an equal area AP filter
                     r1 = r0 * np.sqrt(2.)
+                    
+                    if filterType == "DSigma":
+                        dr = 0.75 # sqrt(0.5) arcmin, TODO: make this an input parameter
+                        # Disk radius in rad
+                        r0 = self.RApArcmin[iRAp] / 60. * np.pi/180.
+                        # outer ring radius in rad
+                        r1 = r0 + dr / 60. * np.pi/180.
 
                     # perform the filtering
                     filtMap[filterType][iRAp], filtMask[filterType][iRAp], filtHitNoiseStdDev[filterType][iRAp], filtArea[filterType][iRAp] = self.aperturePhotometryFilter(
@@ -1997,6 +2011,9 @@ class ThumbStack(object):
         elif filterType == 'ring':
             result = np.exp(-0.5*self.RApArcmin**2/sigma_cluster**2) - \
                 np.exp(-0.5*(self.RApArcmin*np.sqrt(2.))**2/sigma_cluster**2)
+        elif filterType=='DSigma':
+            # This is wrong, just a placeholder since we're not using the theory profile.
+            result = np.exp(-0.5*self.RApArcmin**2/sigma_cluster**2) - np.exp(-0.5*(self.RApArcmin*np.sqrt(2.))**2/sigma_cluster**2)
         return result
 
     def ftheoryGaussianProfilePixelated(self, sigma_cluster=1.5, filterType='diskring', dxDeg=0.3, dyDeg=0.3, resArcmin=0.25, proj='cea', pixwin=0, test=False):
