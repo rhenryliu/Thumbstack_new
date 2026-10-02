@@ -55,6 +55,12 @@ SUFFIX = param_Dict.get('suffix', '')          # appended to the ThumbStack outp
 mapSubset = param_Dict.get('maps', None)       # list of CMB map names to keep
 catalogSubset = param_Dict.get('catalogs', None)  # list of catalog names to keep
 
+# Output root; ThumbStack writes to <pathOut>output/thumbstack/<name>/. A new root
+# keeps a run from overwriting an earlier one.
+pathOut = param_Dict.get('path_out', "/pscratch/sd/r/rhliu/projects/ThumbStack_ringring_v2/")
+if not pathOut.endswith('/'):
+    pathOut += '/'  # ThumbStack builds its path as pathOut + "output/thumbstack/"
+
 # ACT DR6 maps and masks (scratch; backed up on CFS m4031)
 MAP_DIR = "/pscratch/sd/r/rhliu/projects/ThumbStack/ACT_DR6/"
 pathMask = MAP_DIR + 'wide_mask_GAL070_apod_1.50_deg_wExtended.fits'
@@ -67,6 +73,8 @@ if not pathCatalogs.endswith('/'):
     pathCatalogs += '/'  # Catalog builds its path as pathOut + name
 
 plot_Path = "./figures/ThumbStack_AllPlots_" + filterType + "_dbeta_" + T_CIB.replace('.', '') + SUFFIX + ".pdf"
+# distinct path per job, so concurrent jobs don't race on one file
+plot_Path = param_Dict.get('plot_path', plot_Path)
 
 ##################################################################################
 
@@ -77,11 +85,19 @@ nProc = 64  # 1 haswell node on cori
 # (see act_dr6.02_nilc_wget.sh). 'act_dr6_fiducial' is the older internal
 # ILC y-map; it is a different map version from the DR6.02 fiducial
 # (4' block correlation 0.96, and a half-pixel Dec offset in the CAR grid).
+# 'cib' deprojects the CIB at a fixed spectral index beta; 'dBeta' additionally
+# deprojects its first moment in beta. Both at dust temperature T_CIB.
 
 CMB_params = [(MAP_DIR + "ilc_SZ_yy.fits",
                pathMask2, False, 'act_dr6_fiducial', 'ACT DR6 (fiducial, internal)', 93.e9),
               (MAP_DIR + "act-planck_dr6.02_nilc_ComptonY.fits",
                pathMask2, False, 'act_dr602_fiducial', 'ACT DR6.02 (fiducial)', 93.e9),
+              (MAP_DIR + "act-planck_dr6.02_nilc_ComptonY_deproj_cib_1.2_"+T_CIB+".fits",
+               pathMask2, False, 'act_dr602_cib_1.2_'+T_CIB, r'ACT DR6.02 (CIB $\beta$ 1.2)', 93.e9),
+              (MAP_DIR + "act-planck_dr6.02_nilc_ComptonY_deproj_cib_1.4_"+T_CIB+".fits",
+               pathMask2, False, 'act_dr602_cib_1.4_'+T_CIB, r'ACT DR6.02 (CIB $\beta$ 1.4)', 93.e9),
+              (MAP_DIR + "act-planck_dr6.02_nilc_ComptonY_deproj_cib_1.6_"+T_CIB+".fits",
+               pathMask2, False, 'act_dr602_cib_1.6_'+T_CIB, r'ACT DR6.02 (CIB $\beta$ 1.6)', 93.e9),
               (MAP_DIR + "act-planck_dr6.02_nilc_ComptonY_deproj_cib_cibdBeta_1.2_"+T_CIB+".fits",
                pathMask2, False, 'act_dr602_dBeta_1.2_'+T_CIB, r'ACT DR6.02 (d$\beta$ 1.2)', 93.e9),
               (MAP_DIR + "act-planck_dr6.02_nilc_ComptonY_deproj_cib_cibdBeta_1.4_"+T_CIB+".fits",
@@ -198,6 +214,7 @@ for key in list(catalogKeys):
                         doVShuffle=False,
                         cmbNu=cmap.nu,
                         cmbUnitLatex=cmap.unitLatex,
+                        pathOut=pathOut,
                         rApMinArcmin=rApMinArcmin,
                         rApMaxArcmin=rApMaxArcmin,
                         nRAp=nRAp,
