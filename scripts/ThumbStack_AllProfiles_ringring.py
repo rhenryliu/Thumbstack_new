@@ -60,6 +60,9 @@ catalogSubset = param_Dict.get('catalogs', None)  # list of catalog names to kee
 pathOut = param_Dict.get('path_out', "/pscratch/sd/r/rhliu/projects/ThumbStack_ringring_v2/")
 if not pathOut.endswith('/'):
     pathOut += '/'  # ThumbStack builds its path as pathOut + "output/thumbstack/"
+if pathOut == '/' or os.path.realpath(pathOut) == os.path.realpath(
+        "/pscratch/sd/r/rhliu/projects/ThumbStack/"):
+    sys.exit("path_out would overwrite an earlier run's root (or is empty): " + pathOut)
 
 # ACT DR6 maps and masks (scratch; backed up on CFS m4031)
 MAP_DIR = "/pscratch/sd/r/rhliu/projects/ThumbStack/ACT_DR6/"
@@ -72,9 +75,15 @@ pathCatalogs = param_Dict.get('catalog_dir', pathCatalogs)  # e.g. a subsampled 
 if not pathCatalogs.endswith('/'):
     pathCatalogs += '/'  # Catalog builds its path as pathOut + name
 
-plot_Path = "./figures/ThumbStack_AllPlots_" + filterType + "_dbeta_" + T_CIB.replace('.', '') + SUFFIX + ".pdf"
+plot_Path = ("./figures/ThumbStack_AllPlots_" + filterType + "_dbeta_"
+             + T_CIB.replace('.', '') + "_v2" + SUFFIX + ".pdf")
 # distinct path per job, so concurrent jobs don't race on one file
 plot_Path = param_Dict.get('plot_path', plot_Path)
+
+print('Resolved paths:')
+print('  output root  : ' + pathOut)
+print('  catalogues   : ' + pathCatalogs)
+print('  summary plot : ' + plot_Path)
 
 ##################################################################################
 
@@ -259,7 +268,7 @@ for i, key in enumerate(list(catalogKeys)):
 ax.legend(fontsize=10, labelspacing=0.1)
 plt.subplots_adjust(wspace=0, hspace=0)
 plt.tight_layout()
-os.makedirs(os.path.dirname(plot_Path), exist_ok=True)
+os.makedirs(os.path.dirname(plot_Path) or '.', exist_ok=True)
 fig.savefig(plot_Path, dpi=100) # bbox_inches='tight')
 
 print('Done!!!')
